@@ -11,7 +11,8 @@ module dataram (
     input we,
     input re,
     input [`MEM_DEPTH-3:0] addr,
-    input [127:0] din,
+    input [1:0] offset,
+    input [31:0] din,
 
     output reg [127:0] dout,
     output wire complete
@@ -33,7 +34,12 @@ module dataram (
 
     always @(posedge memclk) begin
         if (we & latency_done)
-            mem[addr] <= din;
+            case(offset) 
+                2'b00: mem[addr] <= {mem[addr][127:32], din};
+                2'b01: mem[addr] <= {mem[addr][127:64], din, mem[addr][31:0]};
+                2'b10: mem[addr] <= {mem[addr][127:96], din, mem[addr][63:0]};
+                2'b11: mem[addr] <= {din, mem[addr][95:0]};
+            endcase
         if (re & latency_done)
             dout <= mem[addr];
     end
