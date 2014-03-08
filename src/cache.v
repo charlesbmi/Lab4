@@ -31,7 +31,6 @@ module cache (
     reg [21:0] tag_bits [63:0];
     reg [127:0] data_blocks [63:0];
     wire read;
-    wire [31:0] cache_dout;
     wire cache_complete;
 
     // write to cache on hit
@@ -54,12 +53,20 @@ module cache (
     assign read = (tag == tag_bits[index] && valid[index] && re);
 
     always @(posedge clk) begin
-        case(read)
-            1'b1: cache_dout = data_blocks[index][(((offset + 1) << 5) - 1):(offset << 5)];
-            1'b0: cache_dout = dram_out[index][(((offset + 1) << 5) - 1):(offset << 5)];
+        case({read,offset})
+            3'b100: {cache_dout, data_blocks[index]} = {data_blocks[index][31:0], data_blocks[index]};
+            3'b101: {cache_dout, data_blocks[index]} = {data_blocks[index][63:32], data_blocks[index]};
+            3'b110: {cache_dout, data_blocks[index]} = {data_blocks[index][95:64], data_blocks[index]};
+            3'b111: {cache_dout, data_blocks[index]} = {data_blocks[index][127:96], data_blocks[index]};
+            3'b000: {cache_dout, data_blocks[index]} = {dram_out[index][31:0], dram_out};
+            3'b001: {cache_dout, data_blocks[index]} = {dram_out[index][63:32], dram_out};
+            3'b010: {cache_dout, data_blocks[index]} = {dram_out[index][95:64], dram_out};
+            3'b011: {cache_dout, data_blocks[index]} = {dram_out[index][127:96], dram_out};
+            default: {cache_dout, data_blocks[index]}  = {32'b0, 128'b0};
         endcase
     end
-    
+
+    assign dout = cache_dout;
     assign complete = read? 1'b1: dram_complete;
 
     // USE THIS SYNCHRONOUS BLOCK TO ASSIGN THE INPUTS TO DRAM
@@ -69,11 +76,10 @@ module cache (
     reg [`MEM_DEPTH-3:0] dram_addr;
     reg [127:0] dram_in;
     reg [31:0] cache_dout;
-    reg cache_complete;
 
     always @(posedge clk) begin
         case(read)
-            1'b1: {dram_we, dram_re, dram_in, dram_addr} = {1'b0, 1'b0, 128'b0, 0};
+            1'b1: {dram_we, dram_re, dram_in, dram_addr} = {1'b0, 1'b0, 128'b0, 32'b0};
             1'b0: {dram_we, dram_re, dram_in, dram_addr} = {1'b0, 1'b1, din, addr[`MEM_DEPTH-1:2]};
         endcase
     end
@@ -86,9 +92,6 @@ module cache (
     // block, (which are four words each).
     ///*
 
-    // just pass we and re straignt to the DRAM
-    wire dram_we = we;
-    wire dram_re = re;
 
     // address a whole block per word (2^4 bytes) TODO: If address is in bytes, shouldn't this be MEM_DEPTH+1:4? That's what may be changed, with the rest as offsetting.
     // change this in your implementation
@@ -96,10 +99,9 @@ module cache (
 
     // only use the first word in the cache line
     // change this in your implementation
-    wire [31:0] cache_dout = dram_out[31:0];
 
     // the cache is done when DRAM is done
-    wire cache_complete = dram_complete;
+    assign cache_complete = complete;
 
     dataram dram (.clk(clk),
                   .memclk(memclk),
