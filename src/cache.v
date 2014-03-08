@@ -38,25 +38,19 @@ module cache (
     wire hit = valid_bits[index] && (tag_bits[index] == tag);
     always @(*) begin
         if (we && hit) begin
-            data_blocks[index][((offset+1)<<5)-1 : offset << 5] = din;
-        end
-        /* If above doesn't work inside the if statement
             case (offset)
                 2'b00: data_blocks[index] = {data_blocks[index][127:32], din};
                 2'b01: data_blocks[index] = {data_blocks[index][127:64], din, data_blocks[index][31:0]};
                 2'b10: data_blocks[index] = {data_blocks[index][127:96], din, data_blocks[index][64:0]};
                 2'b11: data_blocks[index] = {din, data_blocks[index][95:0]};
             endcase
-        */
+        end
     end
 
     // outputs from DRAM
     wire [127:0] dram_out;
     wire dram_complete;
 
-    assign tag = addr >> 10;
-    assign offset = (addr >> 2) & 0x3;
-    assign index = (addr >> 4) & 0x3F;
     assign read = (tag == tag_bits[index] && valid[index] && re);
 
     always @(posedge clk) begin
