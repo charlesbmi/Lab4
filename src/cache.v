@@ -109,7 +109,6 @@ module cache (
                   .we(dram_we),
                   .re(dram_re),
                   .addr(dram_addr),
-                  .offset(offset),
                   .din(din),
                   .dout(dram_out),
                   .complete(dram_complete));
