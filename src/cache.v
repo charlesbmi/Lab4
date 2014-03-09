@@ -35,12 +35,12 @@ module cache (
 
     // write to cache on hit
     wire hit = valid_bits[index] && (tag_bits[index] == tag);
-    always @(we or hit) begin // TODO: could be posedge memclk or posedge clk
+    always @(*) begin
         if (we && hit) begin
             case (offset)
                 2'b00: data_blocks[index] = {data_blocks[index][127:32], din};
                 2'b01: data_blocks[index] = {data_blocks[index][127:64], din, data_blocks[index][31:0]};
-                2'b10: data_blocks[index] = {data_blocks[index][127:96], din, data_blocks[index][63:0]};
+                2'b10: data_blocks[index] = {data_blocks[index][127:96], din, data_blocks[index][64:0]};
                 2'b11: data_blocks[index] = {din, data_blocks[index][95:0]};
             endcase
         end
@@ -109,7 +109,6 @@ module cache (
                   .we(dram_we),
                   .re(dram_re),
                   .addr(dram_addr),
-                  .offset(offset),
                   .din(din),
                   .dout(dram_out),
                   .complete(dram_complete));
