@@ -72,19 +72,20 @@ module cache (
     // USE THIS SYNCHRONOUS BLOCK TO ASSIGN THE INPUTS TO DRAM
     
     // inputs to dram should be regs when assigned in a state machine
-    reg dram_we, dram_re;
+    wire dram_we;
+    reg dram_re;
     reg [`MEM_DEPTH-3:0] dram_addr;
     reg [127:0] dram_in;
     reg [31:0] cache_dout;
 
     always @(posedge clk) begin
         case(read)
-            1'b1: {dram_we, dram_re, dram_in, dram_addr} = {1'b0, 1'b0, 128'b0, 32'b0};
-            1'b0: {dram_we, dram_re, dram_in, dram_addr} = {1'b0, 1'b1, din, addr[`MEM_DEPTH-1:2]};
+            1'b1: {dram_re, dram_in, dram_addr} = {1'b0, 32'b0, 32'b0};
+            1'b0: {dram_re, dram_in, dram_addr} = {1'b1, din, addr[`MEM_DEPTH-1:2]};
         endcase
     end
     
-    
+    assign dram_we = we;
 
     // COMMENT OUT THIS CONTINUOUS CODE WHEN IMPLEMENTING YOUR CACHE
     // The code below implements the cache module in the trivial case when
