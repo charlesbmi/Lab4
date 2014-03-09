@@ -50,7 +50,7 @@ module cache (
     wire [127:0] dram_out;
     wire dram_complete;
 
-    assign read = (tag == tag_bits[index] && valid[index] && re);
+    assign read = (tag == tag_bits[index] && valid_bits[index] && re);
 
     always @(posedge clk) begin
         case({read,offset})
@@ -109,6 +109,7 @@ module cache (
                   .we(dram_we),
                   .re(dram_re),
                   .addr(dram_addr),
+                  .offset(offset),
                   .din(din),
                   .dout(dram_out),
                   .complete(dram_complete));
