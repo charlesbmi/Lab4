@@ -32,7 +32,7 @@ module cache (
     reg [127:0] data_blocks [63:0];
 
     // write to cache on hit
-    wire hit = valid_bits[index] && (tag_bits[index] == tag);
+    wire hit = (valid_bits[index] === 1'b1) && (tag_bits[index] === tag);
     always @(posedge clk) begin
         if (we && hit) begin
             case (offset)
@@ -65,7 +65,7 @@ module cache (
     end
 
     assign dout = cache_dout;
-    assign complete = (~re && ~we)? 1'b1: (read ? 1'b1: dram_complete);
+    assign complete = (~re && ~we)? 1'b1:(read ? 1'b1: dram_complete);
 
     // USE THIS SYNCHRONOUS BLOCK TO ASSIGN THE INPUTS TO DRAM
     // inputs to dram should be regs when assigned in a state machine
