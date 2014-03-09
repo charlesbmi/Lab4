@@ -51,19 +51,20 @@ module cache (
     wire read = (hit && re);
 
     always @(posedge clk) begin
-        case({read,offset})
-            3'b100: {cache_dout, data_blocks[index]} = {data_blocks[index][31:0], data_blocks[index]};
-            3'b101: {cache_dout, data_blocks[index]} = {data_blocks[index][63:32], data_blocks[index]};
-            3'b110: {cache_dout, data_blocks[index]} = {data_blocks[index][95:64], data_blocks[index]};
-            3'b111: {cache_dout, data_blocks[index]} = {data_blocks[index][127:96], data_blocks[index]};
-            3'b000: {cache_dout, data_blocks[index]} = {dram_out[index][31:0], dram_out};
-            3'b001: {cache_dout, data_blocks[index]} = {dram_out[index][63:32], dram_out};
-            3'b010: {cache_dout, data_blocks[index]} = {dram_out[index][95:64], dram_out};
-            3'b011: {cache_dout, data_blocks[index]} = {dram_out[index][127:96], dram_out};
+        casex({read,offset, dram_complete})
+            4'b100x: {cache_dout, data_blocks[index]} = {data_blocks[index][31:0], data_blocks[index]};
+            4'b101x: {cache_dout, data_blocks[index]} = {data_blocks[index][63:32], data_blocks[index]};
+            4'b110x: {cache_dout, data_blocks[index]} = {data_blocks[index][95:64], data_blocks[index]};
+            4'b111x: {cache_dout, data_blocks[index]} = {data_blocks[index][127:96], data_blocks[index]};
+            4'b0001: {cache_dout, data_blocks[index]} = {dram_out[index][31:0], dram_out};
+            4'b0011: {cache_dout, data_blocks[index]} = {dram_out[index][63:32], dram_out};
+            4'b0101: {cache_dout, data_blocks[index]} = {dram_out[index][95:64], dram_out};
+            4'b0111: {cache_dout, data_blocks[index]} = {dram_out[index][127:96], dram_out};
             default: {cache_dout, data_blocks[index]} = {32'b0, 128'b0};
         endcase
     end
 
+    assign valid_bits[index] = (re && read)? 1'b1:(dram_complete ? 1'b1: 1'b0);
     assign dout = cache_dout;
     assign complete = (~re && ~we)? 1'b1: (read ? 1'b1: dram_complete);
 
@@ -78,6 +79,13 @@ module cache (
         case(read)
             1'b1: {dram_re, dram_in, dram_addr} = {1'b0, 32'b0, 32'b0};
             1'b0: {dram_re, dram_in, dram_addr} = {1'b1, din, addr[`MEM_DEPTH+1:4]};
+        endcase
+    end
+
+    always@(*)begin
+        case(re && dram_complete) 
+            1'b1: {valid_bits[index], tag_bits[index]} = {1'b1, tag};
+            1'b0: {valid_bits[index], tag_bits[index]} = {valid_bits[index], tag_bits[index]};
         endcase
     end
 
