@@ -65,7 +65,7 @@ module cache (
     end
 
     assign dout = cache_dout;
-    assign complete = read ? 1'b1: dram_complete;
+    assign complete = (~re && ~we)? 1'b1: (read ? 1'b1: dram_complete);
 
     // USE THIS SYNCHRONOUS BLOCK TO ASSIGN THE INPUTS TO DRAM
     // inputs to dram should be regs when assigned in a state machine
