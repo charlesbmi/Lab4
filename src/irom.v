@@ -14,7 +14,7 @@ module irom(addr, dout);
 
   assign dout = memory[addr];
 
-  assign memory[  0] = {`J, 26'd90};
+  assign memory[  0] = {`LUI, `ZERO, `T0, 16'hffff};
   assign memory[  1] = {`ORI, `T0, `T0, 16'h000c};
   assign memory[  2] = {`LUI, `NULL, `T1, 16'h6};
   assign memory[  3] = {`ORI, `T1, `T1, 8'd1, 8'd1};
@@ -79,9 +79,9 @@ module irom(addr, dout);
   assign memory[ 62] = {`ORI, `T8, `T8, {8'd0, 8'd1}}; // should run
   assign memory[ 63] = {`LUI, `ZERO, `T0, 16'hffff};
   assign memory[ 64] = {`ORI, `T0, `T0, 16'h000c};
-  assign memory[ 65] = {`ADDI, `ZERO, `A0, 16'd0};
-  assign memory[ 66] = {`ADDI, `ZERO, `A1, 16'd0};
-  assign memory[ 67] = {`ADDI, `ZERO, `A2, 16'd0};
+  assign memory[ 65] = {`ADDI, `ZERO, `A0, 16'h0ff0};
+  assign memory[ 66] = {`ADDI, `ZERO, `A1, 16'd12};
+  assign memory[ 67] = {`ADDI, `ZERO, `A2, 16'd7};
   assign memory[ 68] = {`ADDI, `ZERO, `A3, 16'd0};
   assign memory[ 69] = {`NOP};
   assign memory[ 70] = {`ADDI, `ZERO, `S0, 16'd15};
@@ -91,24 +91,24 @@ module irom(addr, dout);
   assign memory[ 74] = {`ORI, `T1, `T1, 8'd1, 8'd1};
   assign memory[ 75] = {`SW, `T0, `T1, 16'd0};
   assign memory[ 76] = {`NOP};
-  assign memory[ 77] = {`JAL, 26'd104};
+  assign memory[ 77] = {`JAL, 26'd105};
   assign memory[ 78] = {`LUI, `NULL, `T1, 16'h4};
   assign memory[ 79] = {`ORI, `T1, `T1, 8'd1, 8'd2};
   assign memory[ 80] = {`SW, `T0, `T1, 16'd0};
   assign memory[ 81] = {`NOP};
-  assign memory[ 82] = {`JAL, 26'd106};
+  assign memory[ 82] = {`JAL, 26'd109};
   assign memory[ 83] = {`LUI, `NULL, `T1, 16'h1};
   assign memory[ 84] = {`ORI, `T1, `T1, 8'd1, 8'd3};
   assign memory[ 85] = {`SW, `T0, `T1, 16'd0};
   assign memory[ 86] = {`NOP};
-  assign memory[ 87] = {`NOP};
-  assign memory[ 88] = {`NOP};
-  assign memory[ 89] = {`NOP};
-  assign memory[ 90] = {`NOP};
+  assign memory[ 87] = {`JAL, 26'd113};
+  assign memory[ 88] = {`LUI, `NULL, `T1, 16'h1};
+  assign memory[ 89] = {`ORI, `T1, `T1, 8'd1, 8'd4};
+  assign memory[ 90] = {`SW, `T0, `T1, 16'd0};
   assign memory[ 91] = {`NOP};
-  assign memory[ 92] = {`ADDI, `ZERO, `A0, 16'h0ff0};
-  assign memory[ 93] = {`ADDI, `ZERO, `A1, 16'd12};
-  assign memory[ 94] = {`ADDI, `ZERO, `A2, 16'd7};
+  assign memory[ 92] = {`JAL, 26'd117};
+  assign memory[ 93] = {`NOP};
+  assign memory[ 94] = {`NOP};
   assign memory[ 95] = {`NOP};
   assign memory[ 96] = {`NOP};
   assign memory[ 97] = {`NOP};
@@ -119,7 +119,7 @@ module irom(addr, dout);
   assign memory[102] = {`LW, `A0, `S4, 16'd0}; // read miss
   assign memory[103] = {`BNE, `A1, `S4, 16'd512}; // check that right value is read
   assign memory[104] = {`SPECIAL, `RA, `NULL, `NULL, `NULL, `JR};
-  assign memory[105] = {`LW, `A0, `S4, 16'd0}; // read hit
+  assign memory[105] = {`SW, `A0, `A1, 16'd0}; // write hit
   assign memory[106] = {`LW, `A0, `S4, 16'd0}; // read hit
   assign memory[107] = {`BNE, `A1, `S4, 16'd512}; // check that right value is read
   assign memory[108] = {`SPECIAL, `RA, `NULL, `NULL, `NULL, `JR};

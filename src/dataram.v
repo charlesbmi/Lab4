@@ -32,6 +32,7 @@ module dataram (
                                   .d(cycle_count + 1'd1),
                                   .q(cycle_count));
 
+wire [127:0] current_mem_block = mem[addr];
     always @(posedge memclk) begin
         if (we & latency_done)
             case(offset) 
