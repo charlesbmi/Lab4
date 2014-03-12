@@ -33,7 +33,7 @@ module cache (
 
     // write to cache on hit
     wire hit = (valid_bits[index] === 1'b1) && (tag_bits[index] === tag);
-    always @(posedge clk) begin
+    always @(we or hit or din or index) begin
         if (we && hit) begin
             case (offset)
                 2'b00: data_blocks[index] <= {data_blocks[index][127:32], din};
@@ -51,7 +51,7 @@ module cache (
     wire read = (hit && re);
 
     reg [31:0] cache_dout;
-    always @(posedge clk) begin
+    always @(read or addr or dram_complete or dram_out) begin
         casex({read,offset, dram_complete})
             4'b100x: {cache_dout, data_blocks[index]} = {data_blocks[index][31:0], data_blocks[index]};
             4'b101x: {cache_dout, data_blocks[index]} = {data_blocks[index][63:32], data_blocks[index]};
@@ -74,10 +74,10 @@ module cache (
     reg [`MEM_DEPTH-3:0] dram_addr;
     reg [31:0] dram_in;
 
-    always @(posedge clk) begin
+    always @(*) begin
         case(read)
-            1'b1: {dram_re, dram_in, dram_addr} = {1'b0, 32'b0, 32'b0};
-            1'b0: {dram_re, dram_in, dram_addr} = {1'b1, din, addr[`MEM_DEPTH+1:4]};
+            1'b1: {dram_re, dram_in, dram_addr} = {1'b0, 32'b0, 12'b0};
+            1'b0: {dram_re, dram_in, dram_addr} = {re, din, addr[`MEM_DEPTH+1:4]};
         endcase
     end
 
