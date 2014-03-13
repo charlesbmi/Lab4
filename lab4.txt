@@ -1,0 +1,29 @@
+EE 108B Cache Design - LAB4
+
+Charles Guan
+Nipun Agarwala
+
+11th February, 2014
+
+INTRODUCTION:
+In the given lab, we modified the cache.v, dataram.v and irom.v to add the functionality of caching to the memory stage
+of the single cycled processor. The input to the memory checks whether the address being asked for is in the cache. If it is, the memory stage responds by giving the data in the same clock cycle. Otherwise, it stalls the processor and fetches the data from the dataram. The irom.v module contains instructions to check whether the cache.v module works fine.
+
+
+DESIGN:
+We first extract out the required data from the address passed in to find the offset, index and the tag of the data input.
+The we check whether the instruction is either a read, write or neither. If it is a read, we check whether the cache has
+a copy of the address. If som, we return the data within the same clock cycle. Otherwise, we check the dataram for the address and get an entire block of data from which we output the required data and also update the cache after the required latency. This is when the dram complete signal goes high. Simultaneously, we set the valid bits and the tag appropriately. 
+If it is a write signal, then we write through to the dataram. We check whether the data is present in the cache too. If it is present, then we overwrite the data in the cache with the incoming data at the required tag and offset.
+
+
+RESULTS:
+Drawing the initial stationary paddle and ball proved to be simple. These were implented by short write byte loops. However, to create motion, it is necessary to erase and track the ball and paddle while simultaneously re-drawing them. We stored the locations of both in global variables. For self-playing pong, the y-coordinates of each are matched, so this could be stored in a single variable.
+Other issues included coordinate bounding on the paddle when the ball was moving. Since the paddle could not be drawn off the screen that the ball moved upon, it was necessary to ensure that the paddle would stop moving at its edge even though the ball might move for a couple more squares. This required bounds-checking to fix.
+The initial design had issues with speed updating the paddle and ball, resulting in visibly flickering paddles and balls. This was caused by the implementation taking large amounts of time to refresh the new images of the ball and paddle. After reviewing the code, it was understood that performance could be enhanced by changing how the paddle was erase and re-written. Out of simplicity, the original implementation erased the entire paddle at each iteration, and then re-drew the entire paddle, which was time-consuming given that 6 paddle blocks and 1 ball block had to be re-drawn each time. To take advantage of the fact that the ball and paddle would only move once in any direction at any iteration, the final implementation draws only one block for the paddle's leading edge (as relative to the paddle motion) and erases only one block for the paddle's tail edge at each iteration. This speeds up the refresh time by about 3.5 times, as the time-consuming number of blocks to erase and redraw is cut down to two.
+
+CONCLUSIONS:
+The pong simulation, built on top of a Python graphics display, can move at a wide range of speeds without flickering. Furthermore, it will robustly play itself forever. The program was well-designed, drawing on the high-level functions that might be used in high-level language implementations. This mindset guided us to appropriate function decomposition that was tedious at first but led to simplified implementaiton later. Because functions in assembly require explicit stack allocation and register saving, we were more wary of unnecessary decomposition.
+The program was well-implemented, integrating the ball motion and the paddle motion well with shared variables on the stack. The implementation left room to make extensions flexible. For example, allowing users to control the paddle would simply require reading from the input and jumping to the move_up and move_down modules within the update_paddle function.
+Possible changes for next time could include storing global variables on the gp pointer or on the stack.
+
