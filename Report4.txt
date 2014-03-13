@@ -1,0 +1,26 @@
+EE 108B Cache Design - LAB4
+
+Charles Guan
+Nipun Agarwala
+
+12th March, 2014
+
+INTRODUCTION:
+In the given project, we modified mipstop.v to add functionality to the instruction_fetch.v,alu.v and decode.v . The instruction_fetch.v module incremented the PC as the instruction needed. The decode.v module decodes the instruction passed in to it. It decides what kind of instruction it is and accordingly changes the appropriate signals connecting to the other modules. The alu.v module computes the results of the two operands according to the instruction passed into it. The irom.v contains the instructions to be executed.
+
+DESIGN:
+The decode.v module receives the instruction and decodes it. It dissembles the instruction into the opcode, operands, immediate, shamt and function code. Then, if the opcode is a branch instruction, the module assigns the appropriate wires with the correct values. if the opcode is a jump instruction, it updates the PC counter by the offset as specified in the instruction. Otherwise, using a big mux, as suggested by the always block, the module assigns the right alu instruction to the input to the ALU. According to the instruction, the decode.v module updates the memory write, memory read, register write and jump_with_link wires.
+
+The outputs of the decode.v module go to the instruction_fetch.v and alu.v modules. The instruction_fetch.v module updates the PC depending on whether the jump_en and/or branch_en is high. Otherwise it just increments the PC. The alu.v receives the operand values from decode.v and computes the result depending on the function sent from the latter. It outputs the result along with the overflow, if any.
+
+
+RESULTS:
+A direct-mapped, write-through, no-write allocate data cache was implemented for a single-cycle processor. The cache contained 64 blocks of 4 words each, for a 1 KB cache storage. This was the most straightforward cache style but still provides memory access improvements. Deciding on a replacement policy was unnecessary because the cache was direct-mapped and would replace automatically. Additionally, writing data works similarly even if data is in the cache due to its write-through nature. However, the simplicity also sacrifices performance. However, since the program used, as well as the implemented pong had frequent spatial locality, the cache performed well. The cache was tested for accuracy on read misses, read hits, write misses, write hits, and write hits to adjacent blocks.
+The initial design had issues with consecutive writing to the cache using din because of blocking assignment updating at the end of cycles and causing timing issues. These were solved by using non-blocking statements and understanding the correct dependencies of always blocks. One issue that we quickly resolved was the issue of when to assign valid and tag bits in the cache on read misses. The initial intention was to set the bits as soon as the memory access had started. However, this caused a 1-cycle exit from the memory access, because the cache would then find a read hit immediately after. The solution was to set the tag bit during a read enable and a complete sign from the memory. This would effectively overwrite the cache tag on read hits, but since the address was the same, this does not cause any issues.
+
+CONCLUSIONS:
+A direct-mapped cache implementation was used to demonstrate latency improvements over a single large memory access sytem. The implementation utilized fundamental addressing and replacement patterns. Improvements in performance could be added by using set-associative caching or different designs at the cost of extra wires and increased complexity. The design was good in that it abstracted the read and write cases from the above and lower layers. However, some of the ways wires and registers could have been assigned more cleanly, and we weren't sure how to get around the dependencies in our read always block without creating further bugs. Overall, the caching lab went well.
+
+ADDITIONAL QUESTIONS:
+1. Our cache will perform best on frequent reads to the same block or blocks in memory. This pattern will allow the cache to take advantage of spatial and temporal locality. Since our system is write-through, all write operations will be limited by memory latency and will thus be slow.
+2. Our implementation of Pong would have passable cache performance. Excluding display and controller reads and writes, most reads are stack returns, meaning they also require a slow write instruction prior to it. The implementation would have better cache performance if there were many more reads than writes. However, since the stack pointer does not move a lot, the cache takes advantage of spatial locality.

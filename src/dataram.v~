@@ -1,8 +1,7 @@
-`include "mips_defines.v"
-
 // artificial latency cycles
 // the CPI of memory instructions will become MEM_LATENCY + 1
 `define MEM_LATENCY 32'd20
+`define MEM_DEPTH 14 // 2^14 words = 64KB
 
 module dataram (
     input clk,
@@ -32,7 +31,6 @@ module dataram (
                                   .d(cycle_count + 1'd1),
                                   .q(cycle_count));
 
-wire [127:0] current_mem_block = mem[addr];
     always @(posedge memclk) begin
         if (we & latency_done)
             case(offset) 
