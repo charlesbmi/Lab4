@@ -49,7 +49,7 @@ module cache (
     wire [127:0] dram_out;
     wire dram_complete;
 
-    wire read = (hit && re);
+    wire read = hit && re;
 
     reg [31:0] cache_dout;
     always @(re or hit or addr or dram_complete or dram_out) begin
